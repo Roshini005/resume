@@ -1,73 +1,80 @@
-import streamlit as st
 import re
 
-# Define keyword lists
-PROS_KEYWORDS = [
-    "hardworking", "team", "problem-solving", "leadership", "time management",
-    "communication", "adaptability", "quick learner", "organized", "responsible",
-    "attention to detail", "collaboration", "curiosity to learn", "presented", "attended",
-    "developed", "designed", "proficient", "skilled", "certification", "experience", "project"
-]
-
-CONS_KEYWORDS = [
-    "no experience", "lack", "beginner", "unfamiliar", "limited",
-    "difficult", "struggle", "still learning", "basic knowledge",
-    "not confident", "trying to improve", "novice", "in progress",
-    "learning phase", "not experienced", "inexperienced", "needs improvement",
-    "no hands-on", "no projects", "no internship", "no coding experience",
-    "no teamwork experience", "no documentation experience"
-]
-
-# Function to extract pros and cons
-def extract_pros_and_cons(text):
-    text_lower = text.lower()
-    sentences = re.split(r'[\n.]\s*', text_lower)
-
+# Function to analyze the resume text and generate pros and cons
+def analyze_resume(resume_text):
+    # Define keywords for pros and cons
+    pros_keywords = [
+        "experience", "expertise", "certified", "award", "achievement",
+        "skilled", "proficient", "leadership", "success", "published",
+        "developed", "innovative", "quick learner", "strong foundation",
+        "proficient", "experienced", "knowledgeable", "passionate"
+    ]
+    
+    cons_keywords = [
+        "gap", "unemployed", "lack", "missing", "limited", "incomplete",
+        "absence", "insufficient", "no experience", "not proficient",
+        "challenges", "difficulties", "struggled", "weakness"
+    ]
+    
+    # Split the resume text into sentences for analysis
+    sentences = re.split(r'[.!?]', resume_text)
+    sentences = [sentence.strip() for sentence in sentences if sentence.strip()]
+    
+    # Initialize pros and cons lists
     pros = []
     cons = []
-
+    
+    # Analyze each sentence
     for sentence in sentences:
-        for keyword in PROS_KEYWORDS:
-            if keyword in sentence:
-                pros.append(sentence.strip())
+        # Check for pros
+        for keyword in pros_keywords:
+            if re.search(rf'\b{keyword}\b', sentence, re.IGNORECASE):
+                pros.append(sentence)
                 break
-        for keyword in CONS_KEYWORDS:
-            if keyword in sentence:
-                cons.append(sentence.strip())
+        
+        # Check for cons
+        for keyword in cons_keywords:
+            if re.search(rf'\b{keyword}\b', sentence, re.IGNORECASE):
+                cons.append(sentence)
                 break
-
+    
     return pros, cons
 
 
-# --- Streamlit UI ---
-st.set_page_config(page_title="Resume Analyzer", layout="wide")
-st.title("📄 Resume Analyzer: Pros & Cons")
-
-# Divide screen into 2 columns: input (left), output (right)
-left_col, right_col = st.columns([1, 2])
-
-with left_col:
-    st.subheader("📝 Paste Resume Text")
-    resume_text = st.text_area("Paste your resume here (plain text)", height=400)
-
-with right_col:
-    st.subheader("📊 Analysis Result")
-    if resume_text.strip():
-        pros, cons = extract_pros_and_cons(resume_text)
-
-        st.markdown("#### ✅ Pros")
-        if pros:
-            for p in pros:
-                st.markdown(f"- {p}")
-        else:
-            st.info("No strong pros detected.")
-
-        st.markdown("#### ⚠️ Cons")
-        if cons:
-            for c in cons:
-                st.markdown(f"- {c}")
-        else:
-            st.success("No cons detected — your resume looks solid!")
-
+# Function to format and display the output
+def display_analysis(pros, cons):
+    print(f"{'Question':<50} {'Pros and Cons':<100}")
+    print("-" * 150)
+    
+    # Display pros
+    if pros:
+        print(f"{'What are the strengths?':<50} {'; '.join(pros):<100}")
     else:
-        st.info("Paste your resume on the left to see results here ➡️")
+        print(f"{'What are the strengths?':<50} {'No strengths identified.':<100}")
+    
+    # Display cons
+    if cons:
+        print(f"{'What are the weaknesses?':<50} {'; '.join(cons):<100}")
+    else:
+        print(f"{'What are the weaknesses?':<50} {'No weaknesses identified.':<100}")
+
+
+# Main function
+if __name__ == "__main__":
+    # Prompt user to input resume text
+    print("Please paste the resume text below (type 'END' on a new line when finished):")
+    resume_lines = []
+    while True:
+        line = input()
+        if line.strip().upper() == "END":
+            break
+        resume_lines.append(line)
+    
+    # Combine all lines into a single string
+    resume_text = "\n".join(resume_lines)
+    
+    # Analyze the resume text
+    pros, cons = analyze_resume(resume_text)
+    
+    # Display the analysis
+    display_analysis(pros, cons)
